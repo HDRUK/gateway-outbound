@@ -9,11 +9,10 @@ export default class LoggingService {
         });
     }
 
-    sendDataInLogging(data: string, severity: string) {
+    sendDataInLogging(data: any, severity: string) {
         const logMessage = {
-            details: 'message received',
             application: 'gateway-outbound',
-            messageReceived: data,
+            data: JSON.parse(JSON.stringify(data, null, 4)),
         };
         this._logger.setData(logMessage);
         this._logger.setSeverity(severity);
