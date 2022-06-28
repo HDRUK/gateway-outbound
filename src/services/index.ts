@@ -1,3 +1,4 @@
-import LoggingService from './google/LoggingService';
+import LoggingService from './log.service';
+import HttpClientCervice from './httpclient.service';
 
-export { LoggingService };
+export { LoggingService, HttpClientCervice };
