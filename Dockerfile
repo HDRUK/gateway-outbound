@@ -1,10 +1,10 @@
-FROM node:14
+FROM node:16
 
 WORKDIR /var/www
 
 COPY package*.json ./
 
-RUN npm install && npm cache clean --force
+RUN npm ci --only=production
 
 COPY . .
 
