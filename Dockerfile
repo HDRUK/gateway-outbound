@@ -1,13 +1,11 @@
-FROM node:16
+FROM node:16-slim
 
 WORKDIR /var/www
 
 COPY package*.json ./
 
-RUN npm ci --only=production
+RUN npm install --production
 
-COPY . .
-
-EXPOSE 3005
+COPY . ./
 
 CMD ["npm", "run", "build:start"]
