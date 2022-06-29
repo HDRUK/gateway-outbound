@@ -10,7 +10,7 @@ import { LoggingService } from './services/index';
 const app = express();
 const logger = new LoggingService();
 
-const PORT = process.env.PORT || 3005;
+const PORT = process.env.PORT || 8080;
 const HOST = process.env.HOST || '';
 const pubSubProjectId = process.env.PUBSUB_PROJECT_ID || '';
 const pubSubTopicEnquiry = process.env.PUBSUB_TOPIC_ENQUIRY || '';
