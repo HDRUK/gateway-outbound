@@ -46,7 +46,7 @@ app.get('/', (req: Request, res: Response) => {
         const datetime = moment().format('mmmm do yyyy, hh:mm:ss a');
         process.stdout.write(`\n----------------------------------------------------------------\n`);
         const messageToJSON = JSON.parse(JSON.parse( message.data.toString()));
-        console.log(messageToJSON);
+
         const typeOfMessage = messageToJSON.type;
         const typeOfAuthentification = messageToJSON.darIntegration.outbound.auth.type;
 
