@@ -50,6 +50,17 @@ app.get('/', (req: Request, res: Response) => {
         const typeOfMessage = messageToJSON.type;
         const typeOfAuthentification = messageToJSON.darIntegration.outbound.auth.type;
 
+        const urlDarTransformations = process.env.URL_TRANSFORMATION || '';
+        const dataTransformation = {
+            data: messageToJSON.details.questionBank,
+        }
+        // console.log(messageToJSON);
+        // console.log(dataTransformation);
+        apiKeyController.setUrl(`${urlDarTransformations}`);
+        apiKeyController.setBody(JSON.stringify(dataTransformation));
+        const responseTransformation = await apiKeyController.sendPostRequestCloudFuntion();
+        // console.log(responseTransformation);
+
         let response;
         if (typeOfAuthentification === 'api_key') {
             const baseUrl = messageToJSON.darIntegration.outbound.endpoints.baseURL;

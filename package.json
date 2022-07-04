@@ -26,6 +26,7 @@
     "cors": "^2.8.5",
     "dotenv": "^16.0.1",
     "express": "^4.18.1",
+    "google-auth-library": "^8.1.0",
     "moment": "^2.29.3",
     "nodemailer": "^6.7.5",
     "redis": "^4.1.0",

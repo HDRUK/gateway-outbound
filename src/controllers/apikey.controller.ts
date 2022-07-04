@@ -34,4 +34,8 @@ export default class ApiKeyController extends BaseController {
         return await this.postRequest(this.#url, this.#body, this.#options, this.#bearer);
     }
 
+    async sendPostRequestCloudFuntion() {
+        return await this.postRequestCloudFuntion(this.#url, this.#body);
+    }
+
 }
