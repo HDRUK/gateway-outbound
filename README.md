@@ -1,3 +1,3 @@
 ### Gateway Outbound
 
-Receive messages from GCP PubSub
+Working with messages
