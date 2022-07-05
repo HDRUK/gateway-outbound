@@ -56,20 +56,25 @@ app.get('/', (req: Request, res: Response) => {
         }
         // console.log(messageToJSON);
         // console.log(dataTransformation);
-        apiKeyController.setUrl(`${urlDarTransformations}`);
-        apiKeyController.setBody(JSON.stringify(dataTransformation));
-        const responseTransformation = await apiKeyController.sendPostRequestCloudFuntion();
-        // console.log(responseTransformation);
+        const responseTransformation = await apiKeyController.sendPostRequestCloudFuntion(
+            `${urlDarTransformations}`, 
+            JSON.stringify(dataTransformation),
+        );
+        console.log(responseTransformation);
 
         let response;
         if (typeOfAuthentification === 'api_key') {
             const baseUrl = messageToJSON.darIntegration.outbound.endpoints.baseURL;
             const endpoint = messageToJSON.darIntegration.outbound.endpoints[typeOfMessage];
+            const urlEndpoint = `${baseUrl}${endpoint}`;
             const secretKey = messageToJSON.darIntegration.outbound.auth.secretKey;
-            apiKeyController.setUrl(`${baseUrl}${endpoint}`);
-            apiKeyController.setBearer(secretKey);
-            apiKeyController.setBody(messageToJSON.details);
-            response = await apiKeyController.sendPostRequest();
+
+            response = await apiKeyController.sendPostRequest(
+                urlEndpoint, 
+                JSON.stringify(messageToJSON.details), 
+                {}, 
+                secretKey,
+            );
         }
 
         process.stdout.write(response.status);

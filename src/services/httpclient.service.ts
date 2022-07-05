@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { GoogleAuth } from 'google-auth-library';
+const {GoogleAuth} = require('google-auth-library');
 
 export default class HttpClientCervice {
     #axios;
@@ -7,7 +7,6 @@ export default class HttpClientCervice {
 
     constructor() {
         this.#axios = axios;
-        this.#googleAuth = new GoogleAuth();
     }
 
     async post(url, body, options, bearer: string = '') {
@@ -45,20 +44,24 @@ export default class HttpClientCervice {
     }
 
     async postCloudFuntion(url: string, body: string) {
+        const auth = new GoogleAuth();
+
         console.log(JSON.parse(body));
         try {
-            const client = await this.#googleAuth.getIdTokenClient(url);
+            const client = await auth.getIdTokenClient(url);
+            console.log(client);
             const response = await client.request({
                 url,
                 method: 'POST',
                 data: JSON.parse(body),
             });
-            
+            console.log(response.data);
             return {
                 status: 'success',
                 response: response.data,
             };
         } catch (error) {
+            console.log(error);
             return {
                 status: 'error',
                 response: error,
