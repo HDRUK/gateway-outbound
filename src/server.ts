@@ -93,6 +93,7 @@ app.get('/', (req: Request, res: Response) => {
         // logger.sendDataInLogging(JSON.parse(message.data.toString()), 'INFO');
         await logger.sendDataInLogging({
             deliveryAttempt: message.deliveryAttempt,
+            whyIAmHere: 'testing',
         }, 'INFO');
     };
 
