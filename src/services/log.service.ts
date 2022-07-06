@@ -9,13 +9,13 @@ export default class LoggingService {
         });
     }
 
-    sendDataInLogging(data: any, severity: string) {
+    async sendDataInLogging(data: any, severity: string) {
         const logMessage = {
             application: 'gateway-outbound',
             data: JSON.parse(JSON.stringify(data, null, 4)),
         };
         this._logger.setData(logMessage);
         this._logger.setSeverity(severity);
-        this._logger.writeLog();
+        await this._logger.writeLog();
     }
 }
