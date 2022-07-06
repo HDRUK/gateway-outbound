@@ -63,15 +63,16 @@ app.get('/', (req: Request, res: Response) => {
 
         process.stdout.write(response.status);
         process.stdout.write(`\tMessage deliveryAttempt: ${JSON.stringify(message.deliveryAttempt)}\n`);
+        console.log(JSON.stringify(response);
         if (response.status === 'error') {
-            mailController.setFromEmail('from@email.com');
-            mailController.setToEmail('to@email.com');
-            mailController.setSubjectEmail(`Response Status: ${response.status} - ${message.deliveryAttempt}`);
-            const textEmail = 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. In quis hendrerit leo, quis vestibulum dolor.';
-            mailController.setTextEmail(textEmail);
-            await mailController.sendEmail();
+            // mailController.setFromEmail('from@email.com');
+            // mailController.setToEmail('to@email.com');
+            // mailController.setSubjectEmail(`Response Status: ${response.status} - ${message.deliveryAttempt}`);
+            // const textEmail = 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. In quis hendrerit leo, quis vestibulum dolor.';
+            // mailController.setTextEmail(textEmail);
+            // await mailController.sendEmail();
 
-            logger.sendDataInLogging(response, 'ERROR');
+            // logger.sendDataInLogging(response, 'ERROR');
 
             message.nack();
         }
