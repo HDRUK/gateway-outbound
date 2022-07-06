@@ -64,12 +64,12 @@ app.get('/', (req: Request, res: Response) => {
         process.stdout.write(JSON.stringify(response));
 
         if (response.status === 'error') {
-            mailController.setFromEmail('from@email.com');
-            mailController.setToEmail('to@email.com');
-            mailController.setSubjectEmail(`Response Status: ${response.status} - ${message.deliveryAttempt}`);
-            const textEmail = 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. In quis hendrerit leo, quis vestibulum dolor.';
-            mailController.setTextEmail(textEmail);
-            await mailController.sendEmail();
+            // mailController.setFromEmail('from@email.com');
+            // mailController.setToEmail('to@email.com');
+            // mailController.setSubjectEmail(`Response Status: ${response.status} - ${message.deliveryAttempt}`);
+            // const textEmail = 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. In quis hendrerit leo, quis vestibulum dolor.';
+            // mailController.setTextEmail(textEmail);
+            // await mailController.sendEmail();
 
             // logger.sendDataInLogging(response, 'ERROR');
 
@@ -91,10 +91,10 @@ app.get('/', (req: Request, res: Response) => {
 
         process.stdout.write(message.data.toString());
         // logger.sendDataInLogging(JSON.parse(message.data.toString()), 'INFO');
-        await logger.sendDataInLogging({
-            deliveryAttempt: message.deliveryAttempt,
-            whyIAmHere: 'testing',
-        }, 'INFO');
+        // await logger.sendDataInLogging({
+        //     deliveryAttempt: message.deliveryAttempt,
+        //     whyIAmHere: 'testing',
+        // }, 'INFO');
     };
 
     // Listen for new messages until timeout is hit
