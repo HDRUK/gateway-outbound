@@ -63,8 +63,8 @@ app.get('/', (req: Request, res: Response) => {
 
         process.stdout.write(response.status);
         process.stdout.write(`\tMessage deliveryAttempt: ${JSON.stringify(message.deliveryAttempt)}\n`);
-        console.log(JSON.stringify(response);
-        
+        console.log(JSON.stringify(response));
+
         if (response.status === 'error') {
             // mailController.setFromEmail('from@email.com');
             // mailController.setToEmail('to@email.com');
