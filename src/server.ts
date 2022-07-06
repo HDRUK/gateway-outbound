@@ -93,6 +93,9 @@ app.get('/', (req: Request, res: Response) => {
 
         process.stdout.write(message.data.toString());
         // logger.sendDataInLogging(JSON.parse(message.data.toString()), 'INFO');
+        logger.sendDataInLogging({
+            deliveryAttempt: message.deliveryAttempt,
+        }, 'INFO');
     };
 
     // Listen for new messages until timeout is hit
