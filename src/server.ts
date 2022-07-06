@@ -91,7 +91,8 @@ app.get('/', (req: Request, res: Response) => {
             message.ack();
         }
 
-        logger.sendDataInLogging(JSON.parse(message.data.toString()), 'INFO');
+        process.stdout.write(message.data.toString());
+        // logger.sendDataInLogging(JSON.parse(message.data.toString()), 'INFO');
     };
 
     // Listen for new messages until timeout is hit
