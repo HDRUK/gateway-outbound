@@ -3,12 +3,9 @@ import 'dotenv/config';
 import express, { Request, Response } from 'express';
 import cors from 'cors';
 import bodyParser from 'body-parser';
-import moment from 'moment';
 import { PubSub, Message } from '@google-cloud/pubsub';
-import { LoggingService } from './services/index';
 
 const app = express();
-const logger = new LoggingService();
 
 const PORT = process.env.PORT || 8080;
 const HOST = process.env.HOST || '';
@@ -42,27 +39,38 @@ app.get('/', (req: Request, res: Response) => {
 
     // Create an event handler to handle messages
     const messageHandler = async (message: Message) => {
-        
-        const datetime = moment().format('mmmm do yyyy, hh:mm:ss a');
-        process.stdout.write(`\n----------------------------------------------------------------\n`);
-        const messageToJSON = JSON.parse(JSON.parse( message.data.toString()));
-
+        const messageToJSON = JSON.parse(JSON.parse(message.data.toString()));
         const typeOfMessage = messageToJSON.type;
         const typeOfAuthentification = messageToJSON.darIntegration.outbound.auth.type;
+
+        const urlDarTransformations = process.env.URL_TRANSFORMATION || '';
+        const dataTransformation = {
+            data: messageToJSON.details.questionBank,
+        }
+
+        process.stdout.write(`MESSAGE RECEIVED FROM PUBSUB : ${JSON.stringify(messageToJSON)}\n`);
+        process.stdout.write(`Message deliveryAttempt: ${JSON.stringify(message.deliveryAttempt)}\n`);
+
+        const responseTransformation = await apiKeyController.sendPostRequestCloudFuntion(
+            `${urlDarTransformations}`, 
+            JSON.stringify(dataTransformation),
+        );
 
         let response;
         if (typeOfAuthentification === 'api_key') {
             const baseUrl = messageToJSON.darIntegration.outbound.endpoints.baseURL;
             const endpoint = messageToJSON.darIntegration.outbound.endpoints[typeOfMessage];
+            const urlEndpoint = `${baseUrl}${endpoint}`;
             const secretKey = messageToJSON.darIntegration.outbound.auth.secretKey;
-            apiKeyController.setUrl(`${baseUrl}${endpoint}`);
-            apiKeyController.setBearer(secretKey);
-            apiKeyController.setBody(messageToJSON.details);
-            response = await apiKeyController.sendPostRequest();
+
+            response = await apiKeyController.sendPostRequest(
+                urlEndpoint, 
+                JSON.stringify(messageToJSON.details), 
+                {}, 
+                secretKey,
+            );
         }
 
-        process.stdout.write(response.status);
-        process.stdout.write(`\tMessage deliveryAttempt: ${JSON.stringify(message.deliveryAttempt)}\n`);
         if (response.status === 'error') {
             mailController.setFromEmail('from@email.com');
             mailController.setToEmail('to@email.com');
@@ -70,8 +78,6 @@ app.get('/', (req: Request, res: Response) => {
             const textEmail = 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. In quis hendrerit leo, quis vestibulum dolor.';
             mailController.setTextEmail(textEmail);
             await mailController.sendEmail();
-
-            logger.sendDataInLogging(response, 'ERROR');
 
             message.nack();
         }
@@ -84,12 +90,8 @@ app.get('/', (req: Request, res: Response) => {
             mailController.setTextEmail(textEmail);
             await mailController.sendEmail();
 
-            logger.sendDataInLogging(response, 'INFO');
-
             message.ack();
         }
-
-        logger.sendDataInLogging(JSON.parse(message.data.toString()), 'INFO');
     };
 
     // Listen for new messages until timeout is hit

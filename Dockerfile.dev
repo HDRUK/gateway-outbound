@@ -1,6 +1,7 @@
 FROM node:16
 
-ENV GOOGLE_APPLICATION_CREDENTIALS="/usr/local/etc/gcloud/application_default_credentials.json"
+# ENV GOOGLE_APPLICATION_CREDENTIALS="/usr/local/etc/gcloud/application_default_credentials.json"
+ENV GOOGLE_APPLICATION_CREDENTIALS="/usr/local/etc/gcloud/service-account-withkeys-3.json"
 
 WORKDIR /var/www
 
