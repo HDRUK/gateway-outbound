@@ -27,13 +27,11 @@ export default class MailController extends BaseController {
 
         return await this.#transporter.sendMail(message, (err, info: SMTPTransport.SentMessageInfo) => {
             if (err) {
-                this.sendLoggingMessage(JSON.stringify(err), 'ERROR');
-                throw new Error(err.message);
+                process.stdout.write(`MAIL ERROR: ${JSON.stringify(err)}\n`);
             }
 
-            this.sendLoggingMessage(JSON.stringify(info), 'INFO');
-
-            console.log('Message sent: %s', info.messageId);
+            process.stdout.write(`MAIL : ${JSON.stringify(info)}\n`);
+            process.stdout.write(`MAIL SENT : ${info.messageId}\n`);
         });
     }
 

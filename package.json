@@ -27,10 +27,8 @@
     "dotenv": "^16.0.1",
     "express": "^4.18.1",
     "google-auth-library": "^8.1.0",
-    "moment": "^2.29.3",
     "nodemailer": "^6.7.5",
     "redis": "^4.1.0",
-    "simple-gcp-logging": "git+https://github.com/HDRUK/simple-gcp-logging.git#main",
     "tough-cookie": "^4.0.0",
     "tslib": "^2.4.0",
     "typescript": "^4.7.3"
