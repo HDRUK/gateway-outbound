@@ -1,3 +1,4 @@
-import HttpClientCervice from './httpclient.service';
+import HttpClientService from './httpclient.service';
+import queryService from './queries.service';
 
-export { HttpClientCervice };
+export { HttpClientService, queryService };
