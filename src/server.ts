@@ -20,6 +20,8 @@ const mailController = new MailController();
 const apiKeyController = new ApiKeyController();
 
 import { connectDB } from './config/db.config';
+const db = connectDB(process.env.MONGO_URL, process.env.MONGO_DB);
+
 import { queryService } from './services';
 
 app.use(express.json());
@@ -27,76 +29,81 @@ app.use(cors());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
-const init = async () => {
-    const db = await connectDB(process.env.MONGO_URL, process.env.MONGO_DB);
+// PubSub event handler
+const messageHandler = async (message: Message) => {
+    const messageToJSON = JSON.parse(JSON.parse(message.data.toString()));
 
-    const pubsub = new PubSub({
-        projectId: pubSubProjectId,
-    });
+    const publisherId = messageToJSON.publisherInfo.id;
+    const typeOfMessage = messageToJSON.type;
+    const typeOfAuthentication =
+        messageToJSON.darIntegration.outbound.auth.type;
 
-    const subscription = pubsub.subscription(pubSubSubscriptionId);
+    const urlDarTransformations = process.env.URL_TRANSFORMATION || '';
+    const dataTransformation = {
+        data: messageToJSON.details.questionBank,
+    };
 
-    // Create an event handler to handle messages
-    const messageHandler = async (message: Message) => {
-        const messageToJSON = JSON.parse(JSON.parse(message.data.toString()));
-        const publisherId = messageToJSON.publisherInfo.id;
-        const typeOfMessage = messageToJSON.type;
-        const typeOfAuthentication =
-            messageToJSON.darIntegration.outbound.auth.type;
+    process.stdout.write(
+        `MESSAGE RECEIVED FROM PUBSUB : ${JSON.stringify(messageToJSON)}\n`,
+    );
+    process.stdout.write(
+        `Message deliveryAttempt: ${JSON.stringify(message.deliveryAttempt)}\n`,
+    );
 
-        const urlDarTransformations = process.env.URL_TRANSFORMATION || '';
-        const dataTransformation = {
-            data: messageToJSON.details.questionBank,
-        };
-
-        process.stdout.write(
-            `MESSAGE RECEIVED FROM PUBSUB : ${JSON.stringify(messageToJSON)}\n`,
-        );
-        process.stdout.write(
-            `Message deliveryAttempt: ${JSON.stringify(
-                message.deliveryAttempt,
-            )}\n`,
+    const responseTransformation =
+        await apiKeyController.sendPostRequestCloudFuntion(
+            `${urlDarTransformations}`,
+            JSON.stringify(dataTransformation),
         );
 
-        const responseTransformation =
-            await apiKeyController.sendPostRequestCloudFuntion(
-                `${urlDarTransformations}`,
-                JSON.stringify(dataTransformation),
-            );
+    let response;
+    if (typeOfAuthentication === 'api_key') {
+        const baseUrl = messageToJSON.darIntegration.outbound.endpoints.baseURL;
+        const endpoint =
+            messageToJSON.darIntegration.outbound.endpoints[typeOfMessage];
+        const urlEndpoint = `${baseUrl}${endpoint}`;
+        const secretKey = messageToJSON.darIntegration.outbound.auth.secretKey;
 
-        let response;
-        if (typeOfAuthentication === 'api_key') {
-            const baseUrl =
-                messageToJSON.darIntegration.outbound.endpoints.baseURL;
-            const endpoint =
-                messageToJSON.darIntegration.outbound.endpoints[typeOfMessage];
-            const urlEndpoint = `${baseUrl}${endpoint}`;
-            const secretKey =
-                messageToJSON.darIntegration.outbound.auth.secretKey;
+        response = await apiKeyController.sendPostRequest(
+            urlEndpoint,
+            JSON.stringify(messageToJSON.details),
+            {},
+            secretKey,
+        );
+    }
 
-            response = await apiKeyController.sendPostRequest(
-                urlEndpoint,
-                JSON.stringify(messageToJSON.details),
-                {},
-                secretKey,
-            );
-        }
+    let emailSubject, emailText;
+    if (response.success) {
+        emailSubject = `Response Status: ${response.status} - ${message.deliveryAttempt}`;
+        emailText =
+            'Lorem ipsum dolor sit amet, consectetur adipiscing elit. In quis hendrerit leo, quis vestibulum dolor.';
 
-        let emailSubject, emailText;
-        if (response.success) {
-            emailSubject = `Response Status: ${response.status} - ${message.deliveryAttempt}`;
-            emailText =
-                'Lorem ipsum dolor sit amet, consectetur adipiscing elit. In quis hendrerit leo, quis vestibulum dolor.';
+        return message.ack();
+    } else {
+        switch (response.status) {
+            case 401:
+            case 403:
+                emailSubject = `Gateway Outbound - Authorisation Error - ${response.status}`;
+                emailText = `Lorem ipsum... authorisation error.`;
 
-            message.ack();
-        } else {
-            switch (response.status) {
-                case 401:
-                case 403:
-                    emailSubject = `Gateway Outbound - Authorisation Error - ${response.status}`;
-                    emailText = `Lorem ipsum... authorisation error.`;
+                // disable dar-integration immediately for unauthorised requests
+                await queryService.findOneAndUpdate(
+                    db,
+                    'publishers',
+                    {
+                        _id: new ObjectID(publisherId),
+                    },
+                    { $set: { 'dar-integration.enabled': false } },
+                );
 
-                    // disable dar-integration immediately for unauthorised requests
+                break;
+
+            case 500:
+                emailSubject = `Gateway Outbound - Server Error - ${response.status}`;
+                emailText = `Lorem ipsum... server error.`;
+
+                if (message.deliveryAttempt >= 5) {
+                    // disable dar-integration is 5 attempts passed...
                     await queryService.findOneAndUpdate(
                         db,
                         'publishers',
@@ -105,41 +112,31 @@ const init = async () => {
                         },
                         { $set: { 'dar-integration.enabled': false } },
                     );
+                }
+                break;
 
-                    break;
-
-                case 500:
-                    emailSubject = `Gateway Outbound - Server Error - ${response.status}`;
-                    emailText = `Lorem ipsum... server error.`;
-
-                    if (message.deliveryAttempt >= 5) {
-                        // disable dar-integration is 5 attempts passed...
-                        await queryService.findOneAndUpdate(
-                            db,
-                            'publishers',
-                            {
-                                _id: new ObjectID(publisherId),
-                            },
-                            { $set: { 'dar-integration.enabled': false } },
-                        );
-                    }
-                    break;
-
-                default:
-                    emailSubject = `Gateway Outbound - Error`;
-                    emailText = `Lorem ipsum... unknown error.`;
-            }
-
-            mailController.setFromEmail('from@email.com');
-            mailController.setToEmail('to@email.com');
-            mailController.setSubjectEmail(emailSubject);
-            mailController.setTextEmail(emailText);
-
-            await mailController.sendEmail();
-
-            message.nack();
+            default:
+                emailSubject = `Gateway Outbound - Error`;
+                emailText = `Lorem ipsum... unknown error.`;
         }
-    };
+    }
+
+    mailController.setFromEmail('from@email.com');
+    mailController.setToEmail('to@email.com');
+    mailController.setSubjectEmail(emailSubject);
+    mailController.setTextEmail(emailText);
+
+    await mailController.sendEmail();
+
+    return message.nack();
+};
+
+const init = async () => {
+    const pubsub = new PubSub({
+        projectId: pubSubProjectId,
+    });
+
+    const subscription = pubsub.subscription(pubSubSubscriptionId);
 
     // Listen for new messages until timeout is hit
     subscription.on('message', messageHandler);
