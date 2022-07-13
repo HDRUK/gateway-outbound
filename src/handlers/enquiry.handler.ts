@@ -14,6 +14,7 @@ export const messageHandler = async (message: Message, db: Db) => {
 
     const messageToJSON = JSON.parse(JSON.parse(message.data.toString()));
 
+    const mailAddressees = messageToJSON.darIntegration.notificationEmail || [];
     const publisherId = messageToJSON.publisherInfo.id;
     const typeOfMessage = messageToJSON.type;
     const typeOfAuthentication =
@@ -52,7 +53,7 @@ export const messageHandler = async (message: Message, db: Db) => {
 
     let emailSubject, emailText;
     mailController.setFromEmail('from@email.com');
-    mailController.setToEmail('to@email.com');
+    mailController.setToEmail(mailAddressees);
 
     // IF POST to remote server was successful
     if (response.success) {

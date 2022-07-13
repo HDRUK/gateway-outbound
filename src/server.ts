@@ -80,3 +80,5 @@ app.use((req: Request, res: Response) => {
 app.listen(PORT, () => {
     process.stdout.write(`Listening on ${HOST}\n`);
 });
+
+process.stdout.write('\x1Bc');

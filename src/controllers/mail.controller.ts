@@ -41,8 +41,8 @@ export default class MailController extends BaseController {
         return (this.#fromEmail = email);
     }
 
-    setToEmail(email: string) {
-        return (this.#toEmail = email);
+    setToEmail(emails: string[]) {
+        return (this.#toEmail = emails.join(', '));
     }
 
     setSubjectEmail(subjectEmail: string) {

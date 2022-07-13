@@ -9,6 +9,7 @@ const mailController = new MailController();
 
 export const deadLetterHandler = async (message: Message, db: Db) => {
     const messageToJSON = JSON.parse(JSON.parse(message.data.toString()));
+    const mailAddressees = messageToJSON.darIntegration.notificationEmail || [];
     const publisherId = messageToJSON.publisherInfo.id;
 
     process.stdout.write(
@@ -26,7 +27,7 @@ export const deadLetterHandler = async (message: Message, db: Db) => {
     );
 
     mailController.setFromEmail('from@email.com');
-    mailController.setToEmail('to@email.com');
+    mailController.setToEmail(mailAddressees);
     mailController.setSubjectEmail(
         `DAR Integration disabled for publisher ${publisherId}`,
     );
