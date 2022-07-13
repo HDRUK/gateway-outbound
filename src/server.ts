@@ -12,9 +12,11 @@ const HOST = process.env.HOST || '';
 const pubSubProjectId = process.env.PUBSUB_PROJECT_ID || '';
 const pubSubTopicEnquiry = process.env.PUBSUB_TOPIC_ENQUIRY || '';
 const pubSubSubscriptionId = process.env.PUBSUB_SUBSCRIPTION_ID || '';
+const pubSubDeadLetterSubscriptionId =
+    process.env.PUBSUB_DEAD_LETTER_SUBSCRIPTION_ID || '';
 
 import { connectDB } from './config/db.config';
-import { messageHandler } from './handlers/pubsub.handler';
+import { messageHandler, deadLetterHandler } from './handlers/index';
 
 app.use(express.json());
 app.use(cors());
@@ -28,14 +30,22 @@ const init = async () => {
 
     const db = await connectDB(process.env.MONGO_URL, process.env.MONGO_DB);
 
-    const subscription = pubsub.subscription(pubSubSubscriptionId);
+    const subscriptionEnquiry = pubsub.subscription(pubSubSubscriptionId);
+    const subscriptionDeadLetter = pubsub.subscription(
+        pubSubDeadLetterSubscriptionId,
+    );
 
-    // Listen for new messages until timeout is hit
-    subscription.on('message', (message) => {
+    // Listen for new messages on enquiry sub
+    subscriptionEnquiry.on('message', (message) => {
         messageHandler(message, db);
     });
 
-    subscription.on('error', (error) => {
+    // Listen for new messages on dead-letter sub
+    subscriptionDeadLetter.on('message', (message) => {
+        deadLetterHandler(message, db);
+    });
+
+    subscriptionEnquiry.on('error', (error) => {
         console.error(`Error in pubsub subscription: ${error.message}`, {
             error,
             pubSubTopicEnquiry,
@@ -43,7 +53,7 @@ const init = async () => {
         });
     });
 
-    subscription.on('close', () => {
+    subscriptionEnquiry.on('close', () => {
         console.error('Pubsub subscription closed', {
             pubSubTopicEnquiry,
             pubSubSubscriptionId,
