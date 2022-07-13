@@ -3,10 +3,9 @@ import { MongoClient } from 'mongodb';
 export const connectDB = async (uri: string, database: string) => {
     try {
         const client = await MongoClient.connect(uri);
-
         await client.connect();
 
-        process.stdout.write('MongoDB connected\n');
+        process.stdout.write('SUCCESSFULLY CONNECTED TO MONGODB\n');
 
         return client.db(database);
     } catch (err) {

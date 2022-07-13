@@ -24,16 +24,11 @@ export default class HttpClientCervice {
         this.#axios.defaults.withCredentials = true;
 
         try {
-            //     process.stdout.write(`POST URL : ${url}\n`);
-            //     process.stdout.write(`POST BODY : ${JSON.stringify(body)}\n`);
-
             const response = await this.#axios.post(url, body, {
                 ...options,
                 headers,
                 withCredentials: true,
             });
-
-            // process.stdout.write(`RESPONSE RECEIVED : ${JSON.stringify(response.data)}\n`);
 
             return {
                 success: true,
@@ -41,6 +36,10 @@ export default class HttpClientCervice {
                 response: response.data,
             };
         } catch (error: any) {
+            process.stdout.write(
+                `NETWORK ERROR - ${url}: ${JSON.stringify(error)}\n`,
+            );
+
             return {
                 success: false,
                 status: error.response ? error.response.status : null,
