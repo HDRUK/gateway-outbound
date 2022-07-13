@@ -16,6 +16,10 @@ export const deadLetterHandler = async (message: Message, db: Db) => {
         `DEAD LETTER MESSAGE RECEIVED: ${JSON.stringify(messageToJSON)}\n`,
     );
 
+    process.stdout.write(
+        `DISABLING DAR INTEGRATION FOR PUBLISHER ${publisherId}\n`,
+    );
+
     // Disable dar-integration for relevant publisher
     await queryService.findOneAndUpdate(
         db,
@@ -32,6 +36,7 @@ export const deadLetterHandler = async (message: Message, db: Db) => {
         `DAR Integration disabled for publisher ${publisherId}`,
     );
     mailController.setTextEmail('Lorem ipsum... unknown error.');
+
     await mailController.sendEmail();
 
     return message.ack();

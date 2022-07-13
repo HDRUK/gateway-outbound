@@ -21,7 +21,7 @@ export const messageHandler = async (message: Message, db: Db) => {
         messageToJSON.darIntegration.outbound.auth.type;
 
     process.stdout.write(
-        `MESSAGE RECEIVED FROM PUBSUB : ${JSON.stringify(messageToJSON)}\n`,
+        `MESSAGE RECEIVED FROM PUBSUB: ${JSON.stringify(messageToJSON)}\n`,
     );
     process.stdout.write(
         `Message deliveryAttempt: ${JSON.stringify(message.deliveryAttempt)}\n`,
@@ -85,6 +85,9 @@ export const messageHandler = async (message: Message, db: Db) => {
                 { $set: { 'dar-integration.enabled': false } },
             );
 
+            // Prevent any further attempts if an auth error is encountered
+            message.ack();
+
             break;
 
         case 500:
@@ -100,6 +103,7 @@ export const messageHandler = async (message: Message, db: Db) => {
 
     mailController.setSubjectEmail(emailSubject);
     mailController.setTextEmail(emailText);
+
     await mailController.sendEmail();
 
     return message.nack();
