@@ -33,7 +33,7 @@ export const deadLetterHandler = async (message: Message, db: Db) => {
         { $set: { 'dar-integration.enabled': false } },
     );
 
-    mailController.setFromEmail('from@email.com');
+    mailController.setFromEmail(process.env.MAIL_HDRUK_ADDRESS);
     mailController.setToEmail(mailAddressees);
     mailController.setSubjectEmail(
         `DAR Integration disabled for publisher ${publisherId}`,
