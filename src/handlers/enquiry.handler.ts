@@ -14,12 +14,6 @@ export const messageHandler = async (message: Message, db: Db) => {
 
     const messageToJSON = JSON.parse(JSON.parse(message.data.toString()));
 
-    const mailAddressees = messageToJSON.darIntegration.notificationEmail || [];
-    const publisherId = messageToJSON.publisherInfo.id;
-    const typeOfMessage = messageToJSON.type;
-    const typeOfAuthentication =
-        messageToJSON.darIntegration.outbound.auth.type;
-
     process.stdout.write(
         `MESSAGE RECEIVED FROM PUBSUB: ${JSON.stringify(messageToJSON)}\n`,
     );
@@ -27,21 +21,39 @@ export const messageHandler = async (message: Message, db: Db) => {
         `Message deliveryAttempt: ${JSON.stringify(message.deliveryAttempt)}\n`,
     );
 
-    const responseTransformation =
-        await apiKeyController.sendPostRequestCloudFuntion(
-            `${urlDarTransformations}`,
-            JSON.stringify({
-                data: messageToJSON.details.questionBank,
-            }),
-        );
+    const {
+        type: typeOfMessage,
+        publisherInfo: { id: publisherId },
+        darIntegration: {
+            notificationEmail: mailAddressees,
+            outbound: {
+                auth: {
+                    type: typeOfAuthentication,
+                    secretKey: clientSecretKey,
+                },
+                endpoints,
+            },
+        },
+        details: { questionBank: questionBankData },
+    } = messageToJSON;
+
+    // If type is DAR Application, transform into required format.
+    if (typeOfMessage === '5safes') {
+        const transformedQuestionAnswers =
+            await apiKeyController.sendPostRequestCloudFuntion(
+                `${urlDarTransformations}`,
+                JSON.stringify({
+                    data: questionBankData,
+                }),
+            );
+
+        messageToJSON.details.questionBank = transformedQuestionAnswers;
+    }
 
     let response;
     if (typeOfAuthentication === 'api_key') {
-        const baseUrl = messageToJSON.darIntegration.outbound.endpoints.baseURL;
-        const endpoint =
-            messageToJSON.darIntegration.outbound.endpoints[typeOfMessage];
-        const urlEndpoint = `${baseUrl}${endpoint}`;
-        const secretKey = messageToJSON.darIntegration.outbound.auth.secretKey;
+        const urlEndpoint = `${endpoints.baseURL}${endpoints[typeOfMessage]}`;
+        const secretKey = clientSecretKey;
 
         response = await apiKeyController.sendPostRequest(
             urlEndpoint,
@@ -52,14 +64,14 @@ export const messageHandler = async (message: Message, db: Db) => {
     }
 
     let emailSubject, emailText;
-    mailController.setFromEmail('from@email.com');
+    mailController.setFromEmail(process.env.MAIL_HDRUK_ADDRESS);
     mailController.setToEmail(mailAddressees);
 
-    // IF POST to remote server was successful
+    // IF POST to remote server was successful - acknowledge message from PubSub.
     if (response.success) {
         emailSubject = `Response Status: ${response.status} - ${message.deliveryAttempt}`;
         emailText =
-            'Lorem ipsum dolor sit amet, consectetur adipiscing elit. In quis hendrerit leo, quis vestibulum dolor.';
+            'A message has been successfully sent to the target server.';
 
         mailController.setSubjectEmail(emailSubject);
         mailController.setTextEmail(emailText);
