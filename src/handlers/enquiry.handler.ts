@@ -4,6 +4,7 @@ import { Message } from '@google-cloud/pubsub';
 
 import { queryService } from '../services';
 import MailController from '../controllers/mail.controller';
+import secretService from '../services/secretclient.service';
 import ApiKeyController from '../controllers/apikey.controller';
 
 const mailController = new MailController();
@@ -55,11 +56,13 @@ export const messageHandler = async (message: Message, db: Db) => {
         const urlEndpoint = `${endpoints.baseURL}${endpoints[typeOfMessage]}`;
         const secretKey = clientSecretKey;
 
+        const APIKey = await secretService(secretKey);
+
         response = await apiKeyController.sendPostRequest(
             urlEndpoint,
             JSON.stringify(messageToJSON.details),
             {},
-            secretKey,
+            APIKey,
         );
     }
 
