@@ -4,7 +4,7 @@ import { Message } from '@google-cloud/pubsub';
 
 import { queryService } from '../services';
 import MailController from '../controllers/mail.controller';
-import secretService from '../services/secretclient.service';
+import secretService from '../services/secrets.service';
 import ApiKeyController from '../controllers/apikey.controller';
 
 const mailController = new MailController();
