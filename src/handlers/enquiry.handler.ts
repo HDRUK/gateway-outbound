@@ -80,6 +80,10 @@ export const messageHandler = async (message: Message, db: Db) => {
         mailController.setTextEmail(emailText);
         await mailController.sendEmail();
 
+        process.stdout.write(
+            `SUCCESSFULLY SUBMITTED ${typeOfMessage} FOR PUBLISHER ${publisherId} `,
+        );
+
         return message.ack();
     }
 
