@@ -52,7 +52,7 @@ export default class HttpClientCervice {
         const auth = new GoogleAuth();
 
         try {
-            // process.stdout.write(`SEND FOR TRANSFORMATION : ${body}\n`);
+            process.stdout.write(`SENT FOR TRANSFORMATION: ${body}\n`);
 
             const client = await auth.getIdTokenClient(url);
 
@@ -62,21 +62,19 @@ export default class HttpClientCervice {
                 data: JSON.parse(body),
             });
 
-            // process.stdout.write(
-            //     `RESPONSE TRANSFORMATION : ${JSON.stringify(response.data)}\n`,
-            // );
-
             return {
-                status: 'success',
-                response: response.data,
+                success: true,
+                data: response.data,
             };
         } catch (error) {
             process.stdout.write(
-                `RESPONSE TRANSFORMATION : ${JSON.stringify(error)}\n`,
+                `ERROR TRANFORMING DAR QUESTION ANSWERS: ${JSON.stringify(
+                    error,
+                )}\n`,
             );
             return {
-                status: 'error',
-                response: error,
+                success: false,
+                data: null,
             };
         }
     }

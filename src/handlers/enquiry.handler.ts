@@ -19,7 +19,7 @@ export const messageHandler = async (message: Message, db: Db) => {
         `MESSAGE RECEIVED FROM PUBSUB: ${JSON.stringify(messageToJSON)}\n`,
     );
     process.stdout.write(
-        `Message deliveryAttempt: ${JSON.stringify(message.deliveryAttempt)}\n`,
+        `DELIVERY ATTEMPT NO. ${JSON.stringify(message.deliveryAttempt)}\n`,
     );
 
     const {
@@ -40,7 +40,7 @@ export const messageHandler = async (message: Message, db: Db) => {
 
     // If type is DAR Application, transform into required format.
     if (typeOfMessage === '5safes') {
-        const transformedQuestionAnswers =
+        const transformedDataResponse =
             await apiKeyController.sendPostRequestCloudFuntion(
                 `${urlDarTransformations}`,
                 JSON.stringify({
@@ -48,7 +48,11 @@ export const messageHandler = async (message: Message, db: Db) => {
                 }),
             );
 
-        messageToJSON.details.questionBank = transformedQuestionAnswers;
+        if (!transformedDataResponse.success) {
+            return message.nack();
+        }
+
+        messageToJSON.details.questionBank = transformedDataResponse.data;
     }
 
     let response;
