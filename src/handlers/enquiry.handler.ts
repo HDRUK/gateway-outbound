@@ -38,7 +38,7 @@ export const messageHandler = async (message: Message, db: Db) => {
         details: { questionBank: questionBankData },
     } = messageToJSON;
 
-    // If type is DAR Application, transform into required format.
+    // If type is DAR Application, transform into required format
     if (typeOfMessage === '5safes') {
         const transformedDataResponse =
             await apiKeyController.sendPostRequestCloudFuntion(
@@ -74,7 +74,7 @@ export const messageHandler = async (message: Message, db: Db) => {
     mailController.setFromEmail(process.env.MAIL_HDRUK_ADDRESS);
     mailController.setToEmail(mailAddressees);
 
-    // IF POST to remote server was successful - acknowledge message from PubSub.
+    // IF POST to remote server was successful - acknowledge message from PubSub
     if (response.success) {
         emailSubject = `Response Status: ${response.status} - ${message.deliveryAttempt}`;
         emailText =
@@ -129,7 +129,8 @@ export const messageHandler = async (message: Message, db: Db) => {
 
     await mailController.sendEmail();
 
-    if (message.deliveryAttempt === 5) {
+    if (message.deliveryAttempt > 5) {
+        // prevent further attempts after sending to dead letter
         return message.ack();
     }
 
