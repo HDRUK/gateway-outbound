@@ -55,7 +55,10 @@ export const messageHandler = async (message: Message, db: Db) => {
         messageToJSON.details.questionBank = transformedDataResponse.data;
     }
 
-    let response;
+    let response = {
+        success: false,
+        status: null,
+    };
     if (typeOfAuthentication === 'api_key') {
         const urlEndpoint = `${endpoints.baseURL}${endpoints[typeOfMessage]}`;
         const secretKey = clientSecretKey;
