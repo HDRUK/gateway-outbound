@@ -129,5 +129,9 @@ export const messageHandler = async (message: Message, db: Db) => {
 
     await mailController.sendEmail();
 
+    if (message.deliveryAttempt === 5) {
+        return message.ack();
+    }
+
     return message.nack();
 };
