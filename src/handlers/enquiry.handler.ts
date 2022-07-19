@@ -129,10 +129,5 @@ export const messageHandler = async (message: Message, db: Db) => {
 
     await mailController.sendEmail();
 
-    if (message.deliveryAttempt > 5) {
-        // prevent further attempts after sending to dead letter
-        return message.ack();
-    }
-
     return message.nack();
 };
