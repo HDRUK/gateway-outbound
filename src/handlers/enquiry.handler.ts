@@ -24,7 +24,7 @@ export const messageHandler = async (message: Message, db: Db) => {
 
     const {
         type: typeOfMessage,
-        publisherInfo: { id: publisherId },
+        publisherInfo: { id: publisherId, name },
         darIntegration: {
             notificationEmail: mailAddressees,
             outbound: {
@@ -95,7 +95,7 @@ export const messageHandler = async (message: Message, db: Db) => {
     switch (response.status) {
         case 401:
         case 403:
-            emailSubject = `Gateway Outbound - Authorisation Error - ${response.status}`;
+            emailSubject = `**URGENT** DAR Integration Authentication Error - ${name}`;
             emailText = `Lorem ipsum... authorisation error.`;
 
             // disable dar-integration immediately for unauthorised requests
@@ -114,14 +114,13 @@ export const messageHandler = async (message: Message, db: Db) => {
             break;
 
         case 500:
-            emailSubject = `Gateway Outbound - Server Error - ${response.status}`;
-            emailText = `Lorem ipsum... server error.`;
-
+            process.stdout.write(`SERVER ERROR`);
             break;
 
         default:
-            emailSubject = `Gateway Outbound - Error`;
-            emailText = `Lorem ipsum... unknown error.`;
+            process.stdout.write(
+                `UNKNOWN ERROR: status code ${response.status}`,
+            );
     }
 
     mailController.setSubjectEmail(emailSubject);

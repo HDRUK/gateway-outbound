@@ -11,6 +11,7 @@ export const deadLetterHandler = async (message: Message, db: Db) => {
     const messageToJSON = JSON.parse(JSON.parse(message.data.toString()));
 
     const {
+        publisherInfo: { name },
         darIntegration: { notificationEmail: mailAddressees },
         publisherInfo: { id: publisherId },
     } = messageToJSON;
@@ -36,7 +37,7 @@ export const deadLetterHandler = async (message: Message, db: Db) => {
     mailController.setFromEmail(process.env.MAIL_HDRUK_ADDRESS);
     mailController.setToEmail(mailAddressees);
     mailController.setSubjectEmail(
-        `DAR Integration disabled for publisher ${publisherId}`,
+        `**URGENT** DAR Integration Error - ${name}`,
     );
     mailController.setTextEmail('Lorem ipsum... dead letter.');
 
