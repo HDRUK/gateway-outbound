@@ -98,6 +98,11 @@ export const messageHandler = async (message: Message, db: Db) => {
             emailSubject = `**URGENT** DAR Integration Authentication Error - ${name}`;
             emailText = `Lorem ipsum... authorisation error.`;
 
+            mailController.setSubjectEmail(emailSubject);
+            mailController.setTextEmail(emailText);
+
+            await mailController.sendEmail();
+
             // disable dar-integration immediately for unauthorised requests
             await queryService.findOneAndUpdate(
                 db,
@@ -122,11 +127,6 @@ export const messageHandler = async (message: Message, db: Db) => {
                 `UNKNOWN ERROR: status code ${response.status}`,
             );
     }
-
-    mailController.setSubjectEmail(emailSubject);
-    mailController.setTextEmail(emailText);
-
-    await mailController.sendEmail();
 
     return message.nack();
 };
