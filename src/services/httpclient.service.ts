@@ -1,5 +1,5 @@
 import axios from 'axios';
-const {GoogleAuth} = require('google-auth-library');
+const { GoogleAuth } = require('google-auth-library');
 
 export default class HttpClientCervice {
     #axios;
@@ -24,27 +24,25 @@ export default class HttpClientCervice {
         this.#axios.defaults.withCredentials = true;
 
         try {
-            process.stdout.write(`POST URL : ${url}\n`);
-            process.stdout.write(`POST BODY : ${JSON.stringify(body)}\n`);
-
             const response = await this.#axios.post(url, body, {
                 ...options,
                 headers,
                 withCredentials: true,
             });
 
-            process.stdout.write(`RESPONSE RECEIVED : ${JSON.stringify(response.data)}\n`);
-
             return {
-                status: 'success',
+                success: true,
+                status: response.status,
                 response: response.data,
             };
-        } catch (error) {
-
-            process.stdout.write(`RESPONSE RECEIVED : ${JSON.stringify(error)}\n`);
+        } catch (error: any) {
+            process.stdout.write(
+                `NETWORK ERROR - ${url}: ${JSON.stringify(error)}\n`,
+            );
 
             return {
-                status: 'error',
+                success: false,
+                status: error.response ? error.response.status : null,
                 response: error,
             };
         }
@@ -54,7 +52,7 @@ export default class HttpClientCervice {
         const auth = new GoogleAuth();
 
         try {
-            process.stdout.write(`SEND FOR TRANSFORMATION : ${body}\n`);
+            process.stdout.write(`SENT FOR TRANSFORMATION: ${body}\n`);
 
             const client = await auth.getIdTokenClient(url);
 
@@ -64,22 +62,26 @@ export default class HttpClientCervice {
                 data: JSON.parse(body),
             });
 
-            process.stdout.write(`RESPONSE TRANSFORMATION : ${JSON.stringify(response.data)}\n`);
-
             return {
-                status: 'success',
-                response: response.data,
+                success: true,
+                data: response.data,
             };
         } catch (error) {
-            process.stdout.write(`RESPONSE TRANSFORMATION : ${JSON.stringify(error)}\n`);
+            process.stdout.write(
+                `ERROR TRANFORMING DAR QUESTION ANSWERS: ${JSON.stringify(
+                    error,
+                )}\n`,
+            );
             return {
-                status: 'error',
-                response: error,
+                success: false,
+                data: null,
             };
         }
     }
 
     #setBearer(bearer: string) {
-        this.#axios.defaults.headers.common['Authorization'] = `Bearer ${bearer}`;
+        this.#axios.defaults.headers.common[
+            'Authorization'
+        ] = `Bearer ${bearer}`;
     }
 }

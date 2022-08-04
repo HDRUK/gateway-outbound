@@ -1,10 +1,10 @@
-import { HttpClientCervice } from "../services";
+import { HttpClientService } from '../services';
 
 class BaseController {
     #httpClient;
 
-    constructor(){
-        this.#httpClient = new HttpClientCervice();
+    constructor() {
+        this.#httpClient = new HttpClientService();
     }
 
     async postRequest(url, body, options, bearer) {
