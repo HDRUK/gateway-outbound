@@ -3,11 +3,10 @@ import { ObjectID } from 'bson';
 import { Message } from '@google-cloud/pubsub';
 
 import { queryService } from '../services';
-import MailController from '../controllers/mail.controller';
+import { sendEmailSuccess, sendEmailFourHoundred, sendEmailFiveHoundred } from '../utils/email.util';
 import secretService from '../services/secrets.service';
 import ApiKeyController from '../controllers/apikey.controller';
 
-const mailController = new MailController();
 const apiKeyController = new ApiKeyController();
 
 export const messageHandler = async (message: Message, db: Db) => {
@@ -55,9 +54,9 @@ export const messageHandler = async (message: Message, db: Db) => {
         messageToJSON.details.questionBank = transformedDataResponse.data;
     }
 
-    let response;
+    let response, urlEndpoint;
     if (typeOfAuthentication === 'api_key') {
-        const urlEndpoint = `${endpoints.baseURL}${endpoints[typeOfMessage]}`;
+        urlEndpoint = `${endpoints.baseURL}${endpoints[typeOfMessage]}`;
         const secretKey = clientSecretKey;
 
         const APIKey = await secretService(secretKey);
@@ -70,19 +69,9 @@ export const messageHandler = async (message: Message, db: Db) => {
         );
     }
 
-    let emailSubject, emailText;
-    mailController.setFromEmail(process.env.MAIL_HDRUK_ADDRESS);
-    mailController.setToEmail(mailAddressees);
-
     // IF POST to remote server was successful - acknowledge message from PubSub
     if (response.success) {
-        emailSubject = `Response Status: ${response.status} - ${message.deliveryAttempt}`;
-        emailText =
-            'A message has been successfully sent to the target server.';
-
-        mailController.setSubjectEmail(emailSubject);
-        mailController.setTextEmail(emailText);
-        await mailController.sendEmail();
+        await sendEmailSuccess(mailAddressees, response.status, message.deliveryAttempt);
 
         process.stdout.write(
             `SUCCESSFULLY SUBMITTED ${typeOfMessage} FOR PUBLISHER ${publisherId} `,
@@ -95,13 +84,7 @@ export const messageHandler = async (message: Message, db: Db) => {
     switch (response.status) {
         case 401:
         case 403:
-            emailSubject = `**URGENT** DAR Integration Authentication Error - ${name}`;
-            emailText = `Lorem ipsum... authorisation error.`;
-
-            mailController.setSubjectEmail(emailSubject);
-            mailController.setTextEmail(emailText);
-
-            await mailController.sendEmail();
+            await sendEmailFourHoundred(mailAddressees, name, urlEndpoint);
 
             // disable dar-integration immediately for unauthorised requests
             await queryService.findOneAndUpdate(
@@ -119,6 +102,8 @@ export const messageHandler = async (message: Message, db: Db) => {
             break;
 
         case 500:
+            await sendEmailFiveHoundred(mailAddressees, name, urlEndpoint);
+
             process.stdout.write(`SERVER ERROR`);
             break;
 

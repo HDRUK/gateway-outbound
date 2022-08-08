@@ -22,7 +22,8 @@ export default class MailController extends BaseController {
             from: this.#fromEmail,
             to: this.#toEmail,
             subject: this.#subjectEmail,
-            text: this.#textEmail, // Plain text body
+            text: this.#textEmail || '', // Plain text body
+            html: this.#htmlEmail || '', // HTML body
         };
 
         return await this.#transporter.sendMail(
@@ -37,23 +38,23 @@ export default class MailController extends BaseController {
         );
     }
 
-    setFromEmail(email: string) {
-        return (this.#fromEmail = email);
+    setFromEmail(emailFrom: string) {
+        return this.#fromEmail = emailFrom;
     }
 
-    setToEmail(emails: string[]) {
-        return (this.#toEmail = emails.join(', '));
+    setToEmail(emailTo: string) {
+        return this.#toEmail = emailTo;
     }
 
     setSubjectEmail(subjectEmail: string) {
-        return (this.#subjectEmail = subjectEmail);
+        return this.#subjectEmail = subjectEmail;
     }
 
     setTextEmail(textEmail: string) {
-        return (this.#textEmail = textEmail);
+        return this.#textEmail = textEmail;
     }
 
     setHtmlEmail(htmlEmail: string) {
-        return (this.#htmlEmail = htmlEmail);
+        return this.#htmlEmail = htmlEmail;
     }
 }

@@ -3,9 +3,8 @@ import { ObjectID } from 'bson';
 import { Message } from '@google-cloud/pubsub';
 
 import { queryService } from '../services';
-import MailController from '../controllers/mail.controller';
 
-const mailController = new MailController();
+import {sendEmailDeadLetter} from '../utils/email.util';
 
 export const deadLetterHandler = async (message: Message, db: Db) => {
     const messageToJSON = JSON.parse(JSON.parse(message.data.toString()));
@@ -34,14 +33,7 @@ export const deadLetterHandler = async (message: Message, db: Db) => {
         { $set: { 'dar-integration.enabled': false } },
     );
 
-    mailController.setFromEmail(process.env.MAIL_HDRUK_ADDRESS);
-    mailController.setToEmail(mailAddressees);
-    mailController.setSubjectEmail(
-        `**URGENT** DAR Integration Error - ${name}`,
-    );
-    mailController.setTextEmail('Lorem ipsum... dead letter.');
-
-    await mailController.sendEmail();
+    await sendEmailDeadLetter(mailAddressees, name);
 
     return message.ack();
 };
