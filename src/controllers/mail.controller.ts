@@ -1,4 +1,4 @@
-import connectMail from "../services/mail.service";
+import connectMail from '../services/mail.service';
 
 import SMTPTransport = require('nodemailer/lib/smtp-transport');
 
@@ -22,25 +22,28 @@ export default class MailController extends BaseController {
             from: this.#fromEmail,
             to: this.#toEmail,
             subject: this.#subjectEmail,
-            text: this.#textEmail // Plain text body
+            text: this.#textEmail || '', // Plain text body
+            html: this.#htmlEmail || '', // HTML body
         };
 
-        return await this.#transporter.sendMail(message, (err, info: SMTPTransport.SentMessageInfo) => {
-            if (err) {
-                process.stdout.write(`MAIL ERROR: ${JSON.stringify(err)}\n`);
-            }
-
-            process.stdout.write(`MAIL : ${JSON.stringify(info)}\n`);
-            process.stdout.write(`MAIL SENT : ${info.messageId}\n`);
-        });
+        return await this.#transporter.sendMail(
+            message,
+            (err, info: SMTPTransport.SentMessageInfo) => {
+                if (err) {
+                    process.stdout.write(
+                        `MAIL ERROR: ${JSON.stringify(err)}\n`,
+                    );
+                }
+            },
+        );
     }
 
-    setFromEmail(email: string) {
-        return this.#fromEmail = email;
+    setFromEmail(emailFrom: string) {
+        return this.#fromEmail = emailFrom;
     }
 
-    setToEmail(email: string) {
-        return this.#toEmail = email;
+    setToEmail(emailTo: string) {
+        return this.#toEmail = emailTo;
     }
 
     setSubjectEmail(subjectEmail: string) {
