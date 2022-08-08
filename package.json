@@ -4,7 +4,7 @@
   "description": "",
   "main": "server.ts",
   "scripts": {
-    "dev": "ts-node-dev --trace-warnings --respawn --watch src,db,swagger,test src/server.ts",
+    "dev": "ts-node-dev --trace-warnings --watch src,db,swagger,test src/server.ts",
     "build": "tsc",
     "start": "node dist/src/main.js",
     "build:start": "tsc && node dist/server.js",
