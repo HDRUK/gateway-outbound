@@ -1,7 +1,15 @@
 import { Storage } from '@google-cloud/storage';
 import { SecretManagerServiceClient } from '@google-cloud/secret-manager';
 
-const storage = new Storage();
+const storage = new Storage({
+    credentials: {
+        client_email: process.env.STORAGE_SERVICE_ACCOUNT_EMAIL,
+        private_key: process.env.STORAGE_SERVICE_ACCOUNT_PRIVATE_KEY.replace(
+            /\\n/g,
+            '\n',
+        ),
+    },
+});
 const secretClient = new SecretManagerServiceClient();
 
 const getClientSecret = async (secretKey: string) => {
@@ -21,7 +29,7 @@ const getClientSecret = async (secretKey: string) => {
 
 const generatedV4SignedURL = async (filepath: string) => {
     const expiryTimeSeconds =
-        parseInt(process.env.STORAGE_FILE_TIMEOUT_SECONDS) || 604800;
+        parseInt(process.env.STORAGE_FILE_TIMEOUT_SECONDS) || 432000;
     const bucketName = process.env.STORAGE_FILE_SOURCE_BUCKET_NAME || '';
     const expiryTime = Date.now() + expiryTimeSeconds * 1000;
 
