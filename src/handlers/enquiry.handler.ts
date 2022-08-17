@@ -2,9 +2,12 @@ import { Db } from 'mongodb';
 import { ObjectID } from 'bson';
 import { Message } from '@google-cloud/pubsub';
 
-import { queryService } from '../services';
-import { sendEmailSuccess, sendEmailFourHoundred, sendEmailFiveHoundred } from '../utils/email.util';
-import secretService from '../services/secrets.service';
+import { queryService, googleService } from '../services';
+import {
+    sendEmailSuccess,
+    sendEmailFourHoundred,
+    sendEmailFiveHoundred,
+} from '../utils/email.util';
 import ApiKeyController from '../controllers/apikey.controller';
 
 const apiKeyController = new ApiKeyController();
@@ -34,7 +37,7 @@ export const messageHandler = async (message: Message, db: Db) => {
                 endpoints,
             },
         },
-        details: { questionBank: questionBankData },
+        details: { questionBank: questionBankData, files, dataRequestId },
     } = messageToJSON;
 
     // If type is DAR Application, transform into required format
@@ -51,7 +54,37 @@ export const messageHandler = async (message: Message, db: Db) => {
             return message.nack();
         }
 
+        let formattedFiles = [];
+        if (files) {
+            files
+                .filter((file) => file.status === 'SCANNED')
+                .forEach(async (safeFile) => {
+                    const filepath: string = `dar/${dataRequestId}/${
+                        safeFile.fileId + '_' + safeFile.name
+                    }`;
+
+                    try {
+                        const [signedURL, expiryTime] =
+                            await googleService.generatedV4SignedURL(filepath);
+
+                        formattedFiles.push({
+                            name: safeFile.name,
+                            description: safeFile.description,
+                            signedURL: signedURL,
+                            expires: new Date(expiryTime),
+                        });
+                    } catch (error: any) {
+                        process.stdout.write(
+                            `ERROR GENERATING SIGNED URL FOR FILE ${safeFile.name}: ${error}\n`,
+                        );
+                    }
+                });
+        }
+
+        transformedDataResponse.data.additionalinformationfiles =
+            formattedFiles;
         messageToJSON.details.questionBank = transformedDataResponse.data;
+        delete messageToJSON.details.files;
     }
 
     let response, urlEndpoint;
@@ -59,7 +92,7 @@ export const messageHandler = async (message: Message, db: Db) => {
         urlEndpoint = `${endpoints.baseURL}${endpoints[typeOfMessage]}`;
         const secretKey = clientSecretKey;
 
-        const APIKey = await secretService(secretKey);
+        const APIKey = await googleService.getClientSecret(secretKey);
 
         response = await apiKeyController.sendPostRequest(
             urlEndpoint,
@@ -71,10 +104,16 @@ export const messageHandler = async (message: Message, db: Db) => {
 
     // IF POST to remote server was successful - acknowledge message from PubSub
     if (response.success) {
-        await sendEmailSuccess(mailAddressees, response.status, message.deliveryAttempt);
+        await sendEmailSuccess(
+            mailAddressees,
+            response.status,
+            message.deliveryAttempt,
+        );
 
         process.stdout.write(
-            `SUCCESSFULLY SUBMITTED ${typeOfMessage} FOR PUBLISHER ${publisherId} `,
+            `SUCCESSFULLY SUBMITTED ${typeOfMessage} FOR PUBLISHER ${publisherId}: ${JSON.stringify(
+                messageToJSON.details,
+            )}\n`,
         );
 
         return message.ack();
@@ -104,12 +143,12 @@ export const messageHandler = async (message: Message, db: Db) => {
         case 500:
             await sendEmailFiveHoundred(mailAddressees, name, urlEndpoint);
 
-            process.stdout.write(`SERVER ERROR`);
+            process.stdout.write(`SERVER ERROR\n`);
             break;
 
         default:
             process.stdout.write(
-                `UNKNOWN ERROR: status code ${response.status}`,
+                `UNKNOWN ERROR: status code ${response.status}\n`,
             );
     }
 
