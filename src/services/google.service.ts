@@ -30,7 +30,7 @@ const getClientSecret = async (secretKey: string) => {
     }
 };
 
-const generatedV4SignedURL = async (filepath: string) => {
+const generateV4SignedURL = async (filepath: string) => {
     const expiryTimeSeconds =
         parseInt(process.env.STORAGE_FILE_TIMEOUT_SECONDS) || 432000;
     const expiryTime = Date.now() + expiryTimeSeconds * 1000;
@@ -58,4 +58,4 @@ const generatedV4SignedURL = async (filepath: string) => {
     }
 };
 
-export default { getClientSecret, generatedV4SignedURL };
+export default { getClientSecret, generateV4SignedURL };

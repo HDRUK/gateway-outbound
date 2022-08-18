@@ -65,7 +65,7 @@ export const messageHandler = async (message: Message, db: Db) => {
 
                     try {
                         const [signedURL, expiryTime] =
-                            await googleService.generatedV4SignedURL(filepath);
+                            await googleService.generateV4SignedURL(filepath);
 
                         formattedFiles.push({
                             name: safeFile.name,
