@@ -48,13 +48,14 @@ const generateV4SignedURL = async (filepath: string) => {
             .file(filepath)
             .getSignedUrl(options);
 
-        return [url, expiryTime];
+        return [url, new Date(expiryTime)];
     } catch (error: any) {
         process.stdout.write(
             `ERROR GENERATING SIGNED URL FOR ${filepath}: ${error}\n`,
         );
 
-        throw new Error(error);
+        // Return null if error encountered
+        return [null, null];
     }
 };
 

@@ -63,23 +63,15 @@ export const messageHandler = async (message: Message, db: Db) => {
                         safeFile.fileId + '_' + safeFile.name
                     }`;
 
-                    try {
-                        const [signedURL, expiryTime] =
-                            await googleService.generateV4SignedURL(filepath);
+                    const [signedURL, expiryTime] =
+                        await googleService.generateV4SignedURL(filepath);
 
-                        formattedFiles.push({
-                            name: safeFile.name,
-                            description: safeFile.description,
-                            signedURL: signedURL,
-                            expires: new Date(expiryTime),
-                        });
-                    } catch (error: any) {
-                        process.stdout.write(
-                            `SKIPPING SIGNED URL GENERATION FOR FILE ${safeFile.name}`,
-                        );
-
-                        return;
-                    }
+                    formattedFiles.push({
+                        name: safeFile.name,
+                        description: safeFile.description,
+                        signedURL: signedURL,
+                        expires: expiryTime,
+                    });
                 });
         }
 
