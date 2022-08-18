@@ -75,8 +75,10 @@ export const messageHandler = async (message: Message, db: Db) => {
                         });
                     } catch (error: any) {
                         process.stdout.write(
-                            `ERROR GENERATING SIGNED URL FOR FILE ${safeFile.name}: ${error}\n`,
+                            `SKIPPING SIGNED URL GENERATION FOR FILE ${safeFile.name}`,
                         );
+
+                        return;
                     }
                 });
         }
