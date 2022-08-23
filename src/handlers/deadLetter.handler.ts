@@ -10,10 +10,21 @@ export const deadLetterHandler = async (message: Message, db: Db) => {
     const messageToJSON = JSON.parse(JSON.parse(message.data.toString()));
 
     const {
-        publisherInfo: { name },
-        darIntegration: { notificationEmail: mailAddressees },
-        publisherInfo: { id: publisherId },
+        type: typeOfMessage,
+        publisherInfo: { id: publisherId, name },
+        darIntegration: {
+            notificationEmail: mailAddressees,
+            outbound: {
+                auth: {
+                    type: typeOfAuthentication,
+                    secretKey: clientSecretKey,
+                },
+                endpoints,
+            },
+        },
+        details: { questionBank: questionBankData, files, dataRequestId },
     } = messageToJSON;
+    const urlEndpoint = `${endpoints.baseURL}${endpoints[typeOfMessage]}`;
 
     process.stdout.write(
         `DEAD LETTER MESSAGE RECEIVED: ${JSON.stringify(messageToJSON)}\n`,
@@ -33,7 +44,7 @@ export const deadLetterHandler = async (message: Message, db: Db) => {
         { $set: { 'dar-integration.enabled': false } },
     );
 
-    await sendEmailDeadLetter(mailAddressees, name);
+    await sendEmailDeadLetter(mailAddressees, name, urlEndpoint);
 
     return message.ack();
 };
