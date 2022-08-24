@@ -16,9 +16,7 @@ export default class HttpClientCervice {
             Cookie: 'AspxAutoDetectCookieSupport=1',
         };
 
-        if (bearer) {
-            this.#setBearer(bearer);
-        }
+        this.#setBearer(bearer);
 
         this.#axios.defaults.crossDomain = true;
         this.#axios.defaults.withCredentials = true;

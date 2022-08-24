@@ -92,7 +92,7 @@ export const messageHandler = async (message: Message, db: Db) => {
             urlEndpoint,
             JSON.stringify(messageToJSON.details),
             {},
-            APIKey,
+            APIKey || 'no_bearer_given',
         );
     }
 
