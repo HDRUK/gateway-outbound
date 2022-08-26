@@ -135,7 +135,10 @@ export const messageHandler = async (message: Message, db: Db) => {
             break;
 
         case 500:
-            await sendEmailFiveHoundred(mailAddressees, name, urlEndpoint);
+            // Only send 500 email on last attempt
+            if (message.deliveryAttempt > 4) {
+                await sendEmailFiveHoundred(mailAddressees, name, urlEndpoint);
+            }
 
             process.stdout.write(`SERVER ERROR\n`);
             break;
