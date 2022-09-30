@@ -96,6 +96,14 @@ export const messageHandler = async (message: Message, db: Db) => {
         );
     }
 
+    process.stdout.write(
+        `RESPONSE - success : ${response.success}\n`,
+    );
+
+    process.stdout.write(
+        `RESPONSE - status : ${response.status}\n`,
+    );
+
     // IF POST to remote server was successful - acknowledge message from PubSub
     if (response.success) {
         await sendEmailSuccess(
