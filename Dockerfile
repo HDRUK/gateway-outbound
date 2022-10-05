@@ -4,6 +4,7 @@ WORKDIR /var/www
 
 COPY package*.json ./
 
+RUN npm install -g tcp-listener
 RUN npm install
 
 COPY . ./
