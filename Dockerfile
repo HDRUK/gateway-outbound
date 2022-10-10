@@ -11,5 +11,5 @@ FROM nginx:latest
 COPY --from=build /app/dist /usr/share/nginx/html
 COPY nginx/default.conf /etc/nginx/conf.d/
 COPY nginx/error_pages /usr/share/nginx/html
-EXPOSE 80
+EXPOSE 8080
 CMD [ “nginx”, “-g”, “daemon off;“]
