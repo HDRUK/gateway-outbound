@@ -13,7 +13,7 @@ COPY . ./
 CMD ["npm", "run", "dev"]
 
 FROM nginx:latest
-COPY --from=build /build /usr/share/nginx/html
+COPY --from=build /var/www/build /usr/share/nginx/html
 COPY nginx/default.conf /etc/nginx/conf.d/
 COPY nginx/error_pages /usr/share/nginx/html
 EXPOSE 8080
