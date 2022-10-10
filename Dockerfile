@@ -7,7 +7,7 @@ RUN npm install --silent --legacy-peer-deps
 COPY . /app
 RUN npm run build
 
-FROM nginx:latest
+FROM nginx:1.22
 WORKDIR /app
 COPY --from=content /app/build /usr/share/nginx/html
 COPY nginx/default.conf /etc/nginx/conf.d/
