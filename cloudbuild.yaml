@@ -12,9 +12,9 @@ steps:
               'gcr.io/$PROJECT_ID/${_APP_NAME}:${_ENVIRONMENT}',
               '.',
           ]
-    - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
-      args: ['push', 'gcr.io/$PROJECT_ID/${_APP_NAME}:${_ENVIRONMENT}']
     - name: 'gcr.io/cloud-builders/gcloud'
+      args: ['push', 'gcr.io/$PROJECT_ID/${_APP_NAME}:${_ENVIRONMENT}']
+    - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
       args:
           [
               'run',
