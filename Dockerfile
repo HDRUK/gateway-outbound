@@ -5,7 +5,7 @@ COPY package.json /app/package.json
 COPY .env /app/.env
 RUN npm install --silent --legacy-peer-deps
 COPY . /app
-RUN npm run build:start
+CMD [“npm”, “run”, “build:start”]
 
 FROM nginx:latest
 COPY --from=build /app/dist /usr/share/nginx/html
