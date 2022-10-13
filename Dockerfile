@@ -1,8 +1,11 @@
 FROM node:16
-WORKDIR /app
-ENV PATH /app/node_modules/.bin:$PATH
-COPY package.json /app/package.json
-COPY .env /app/.env
-RUN npm install --silent --legacy-peer-deps
-COPY . /app
+
+WORKDIR /var/www
+
+COPY package*.json ./
+
+RUN npm install
+
+COPY . ./
+
 CMD ["npm", "run", "build:start"]
