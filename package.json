@@ -7,7 +7,7 @@
     "dev": "ts-node-dev --trace-warnings --watch src,db,swagger,test src/server.ts",
     "build": "tsc",
     "start": "node dist/src/main.js",
-    "build:start": "tsc && pm2 start dist/server.js",
+    "build:start": "tsc && node start dist/server.js",
     "lint": "eslint -c './.eslintrc' --fix './src/**/*.ts'",
     "lint:fix": "eslint . --ext .ts --fix",
     "prettier:check": "prettier --config .prettierrc.json --check 'src/**/*.ts'",
