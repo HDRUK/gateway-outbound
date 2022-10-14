@@ -60,7 +60,9 @@ app.use(bodyParser.json());
         });
     });
 })().catch(err => {
-    console.error(err);
+    process.stdout.write(
+        `ERROR: ${JSON.stringify(err)}\n`,
+    );
 });
 
 // basic state request
