@@ -23,7 +23,7 @@ app.use(cors());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
-const init = async () => {
+( async () => {
     const pubsub = new PubSub({
         projectId: pubSubProjectId,
     });
@@ -59,9 +59,11 @@ const init = async () => {
             pubSubSubscriptionId,
         });
     });
-};
+})().catch(err => {
+    console.error(err);
+});
 
-init();
+// (init())();
 
 // basic state request
 app.get('/', (req: Request, res: Response) => {
