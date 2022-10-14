@@ -17,6 +17,7 @@ const pubSubDeadLetterSubscriptionId =
 
 import { connectDB } from './config/db.config';
 import { messageHandler, deadLetterHandler } from './handlers/index';
+// import { connectToDatabase, connection } from './config/db.config';
 
 app.use(express.json());
 app.use(cors());
@@ -62,8 +63,6 @@ app.use(bodyParser.json());
 })().catch(err => {
     console.error(err);
 });
-
-// (init())();
 
 // basic state request
 app.get('/', (req: Request, res: Response) => {
